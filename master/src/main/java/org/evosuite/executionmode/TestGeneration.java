@@ -138,6 +138,8 @@ public class TestGeneration {
         } else if (javaOpts.contains("-Dstrategy=" + Strategy.MAP_ELITES.name())) {
             // TODO: Find a better way to integrate this
             strategy = Strategy.MAP_ELITES;
+        } else if (javaOpts.contains("-Dstrategy=" + Strategy.PBT.name())) {
+            strategy = Strategy.PBT;
         } else if (line.hasOption("generateTests")) {
             strategy = Strategy.ONEBRANCH;
         } else if (line.hasOption("generateSuite")) {
@@ -368,6 +370,9 @@ public class TestGeneration {
                 break;
             case MAP_ELITES:
                 cmdLine.add("-Dstrategy=MAP_ELITES");
+                break;
+            case PBT:
+                cmdLine.add("-Dstrategy=PBT");
                 break;
             default:
                 throw new RuntimeException("Unsupported strategy: " + strategy);
