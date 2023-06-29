@@ -19,6 +19,7 @@
  */
 package org.evosuite.strategy;
 
+import org.evosuite.ClientProcess;
 import org.evosuite.ProgressMonitor;
 import org.evosuite.Properties.Criterion;
 import org.evosuite.Properties;
@@ -28,6 +29,7 @@ import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.TestSuiteChromosomeFactoryMock;
+import org.evosuite.ga.TestSuiteFitnessFunctionMock;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.*;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
@@ -124,28 +126,36 @@ public class PBTSuiteStrategy extends TestGenerationStrategy {
                 ArrayUtil.contains(Properties.CRITERION, Criterion.AMBIGUITY))
             ExecutionTracer.enableTraceCalls();
 
-        algorithm.resetStoppingConditions();
+        TestSuiteChromosome testSuite = new TestSuiteChromosome();
 
-        TestSuiteChromosome testSuite = null;
+        for (int i = 0; i < Properties.NUM_RANDOM_TESTS; i++) {
 
-        if (!(Properties.STOP_ZERO && fitnessFunctions.isEmpty()) || ArrayUtil.contains(Properties.CRITERION, Criterion.EXCEPTION)) {
-            // Perform search
-            LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Using seed {}", Randomness.getSeed());
-            LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Starting evolution");
-            ClientServices.getInstance().getClientNode().changeState(ClientState.SEARCH);
+            algorithm.resetStoppingConditions();
 
-            algorithm.generateSolution();
+            if (!(Properties.STOP_ZERO && fitnessFunctions.isEmpty()) || ArrayUtil.contains(Properties.CRITERION, Criterion.EXCEPTION)) {
+                // Perform search
+                LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Using seed {}", Randomness.getSeed());
+                LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Starting evolution");
+                ClientServices.getInstance().getClientNode().changeState(ClientState.SEARCH);
 
-            testSuite = algorithm.getBestIndividual();
-            if (testSuite.getTestChromosomes().isEmpty()) {
-                LoggingUtils.getEvoLogger().warn(ClientProcess.getPrettyPrintIdentifier() + "Could not generate any test case");
+                algorithm.generateSolution();
+
+                TestSuiteChromosome suite = algorithm.getBestIndividual();
+                if (testSuite.getTestChromosomes().isEmpty()) {
+                    LoggingUtils.getEvoLogger().warn(ClientProcess.getPrettyPrintIdentifier() + "Could not generate any test case");
+                }
+
+                for (TestCase testCase : suite.getTests()) {
+                    testSuite.addTest(testCase);
+                }
+            } else {
+                zeroFitness.setFinished();
+                testSuite = new TestSuiteChromosome();
+                for (FitnessFunction<TestSuiteChromosome> ff : testSuite.getFitnessValues().keySet()) {
+                    testSuite.setCoverage(ff, 1.0);
+                }
             }
-        } else {
-            zeroFitness.setFinished();
-            testSuite = new TestSuiteChromosome();
-            for (FitnessFunction<TestSuiteChromosome> ff : testSuite.getFitnessValues().keySet()) {
-                testSuite.setCoverage(ff, 1.0);
-            }
+
         }
 
         long endTime = System.currentTimeMillis() / 1000;

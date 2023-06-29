@@ -78,6 +78,8 @@ public class PropertiesTestGAFactory
                 }
             case ENTBUG:
                 return new RandomLengthTestFactory();
+            case PBT:
+                return new RandomLengthTestFactory();
             default:
                 break;
         }

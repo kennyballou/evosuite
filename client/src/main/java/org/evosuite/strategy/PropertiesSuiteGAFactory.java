@@ -72,36 +72,37 @@ public class PropertiesSuiteGAFactory
 
     protected ChromosomeFactory<TestSuiteChromosome> getChromosomeFactory() {
         switch (Properties.STRATEGY) {
-            case EVOSUITE:
-                switch (Properties.TEST_FACTORY) {
-                    case ALLMETHODS:
-                        logger.info("Using all methods chromosome factory");
-                        return new TestSuiteChromosomeFactory(
-                                new AllMethodsTestChromosomeFactory());
-                    case RANDOM:
-                        logger.info("Using random chromosome factory");
-                        return new TestSuiteChromosomeFactory(new RandomLengthTestFactory());
-                    case ARCHIVE:
-                        logger.info("Using archive chromosome factory");
-                        return new TestSuiteChromosomeFactory(new ArchiveTestChromosomeFactory());
-                    case JUNIT:
-                        logger.info("Using seeding chromosome factory");
-                        JUnitTestCarvedChromosomeFactory factory = new JUnitTestCarvedChromosomeFactory(
-                                new RandomLengthTestFactory());
-                        return new TestSuiteChromosomeFactory(factory);
-                    case SERIALIZATION:
-                        logger.info("Using serialization seeding chromosome factory");
-                        return new SerializationSuiteChromosomeFactory(
-                                new RandomLengthTestFactory());
-                    default:
-                        throw new RuntimeException("Unsupported test factory: "
-                                + Properties.TEST_FACTORY);
-                }
-            case MOSUITE:
+        case EVOSUITE:
+            switch (Properties.TEST_FACTORY) {
+            case ALLMETHODS:
+                logger.info("Using all methods chromosome factory");
+                return new TestSuiteChromosomeFactory(
+                                                      new AllMethodsTestChromosomeFactory());
+            case RANDOM:
+                logger.info("Using random chromosome factory");
                 return new TestSuiteChromosomeFactory(new RandomLengthTestFactory());
+            case ARCHIVE:
+                logger.info("Using archive chromosome factory");
+                return new TestSuiteChromosomeFactory(new ArchiveTestChromosomeFactory());
+            case JUNIT:
+                logger.info("Using seeding chromosome factory");
+                JUnitTestCarvedChromosomeFactory factory = new JUnitTestCarvedChromosomeFactory(new RandomLengthTestFactory());
+                return new TestSuiteChromosomeFactory(factory);
+            case SERIALIZATION:
+                logger.info("Using serialization seeding chromosome factory");
+                return new SerializationSuiteChromosomeFactory(
+                                                               new RandomLengthTestFactory());
             default:
                 throw new RuntimeException("Unsupported test factory: "
-                        + Properties.TEST_FACTORY);
+                                           + Properties.TEST_FACTORY);
+            }
+        case MOSUITE:
+            return new TestSuiteChromosomeFactory(new RandomLengthTestFactory());
+        case PBT:
+            return new TestSuiteChromosomeFactory(new RandomLengthTestFactory());
+        default:
+            throw new RuntimeException("Unsupported test factory: "
+                                       + Properties.TEST_FACTORY);
         }
     }
 
