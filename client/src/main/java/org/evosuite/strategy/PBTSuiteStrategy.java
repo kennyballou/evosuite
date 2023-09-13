@@ -126,36 +126,29 @@ public class PBTSuiteStrategy extends TestGenerationStrategy {
                 ArrayUtil.contains(Properties.CRITERION, Criterion.AMBIGUITY))
             ExecutionTracer.enableTraceCalls();
 
-        TestSuiteChromosome testSuite = new TestSuiteChromosome();
+        algorithm.resetStoppingConditions();
 
-        for (int i = 0; i < Properties.NUM_RANDOM_TESTS; i++) {
+        TestSuiteChromosome testSuite;
 
-            algorithm.resetStoppingConditions();
+        if (!(Properties.STOP_ZERO && fitnessFunctions.isEmpty()) || ArrayUtil.contains(Properties.CRITERION, Criterion.EXCEPTION)) {
+            // Perform search
+            LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Using seed {}", Randomness.getSeed());
+            LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Starting evolution");
+            ClientServices.getInstance().getClientNode().changeState(ClientState.SEARCH);
 
-            if (!(Properties.STOP_ZERO && fitnessFunctions.isEmpty()) || ArrayUtil.contains(Properties.CRITERION, Criterion.EXCEPTION)) {
-                // Perform search
-                LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Using seed {}", Randomness.getSeed());
-                LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Starting evolution");
-                ClientServices.getInstance().getClientNode().changeState(ClientState.SEARCH);
+            algorithm.generateSolution();
 
-                algorithm.generateSolution();
-
-                TestSuiteChromosome suite = algorithm.getBestIndividual();
-                if (testSuite.getTestChromosomes().isEmpty()) {
-                    LoggingUtils.getEvoLogger().warn(ClientProcess.getPrettyPrintIdentifier() + "Could not generate any test case");
-                }
-
-                for (TestCase testCase : suite.getTests()) {
-                    testSuite.addTest(testCase);
-                }
-            } else {
-                zeroFitness.setFinished();
-                testSuite = new TestSuiteChromosome();
-                for (FitnessFunction<TestSuiteChromosome> ff : testSuite.getFitnessValues().keySet()) {
-                    testSuite.setCoverage(ff, 1.0);
-                }
+            testSuite = algorithm.getBestIndividual();
+            if (testSuite.getTestChromosomes().isEmpty()) {
+                LoggingUtils.getEvoLogger().warn(ClientProcess.getPrettyPrintIdentifier() + "Could not generate any test case");
             }
 
+        } else {
+            zeroFitness.setFinished();
+            testSuite = new TestSuiteChromosome();
+            for (FitnessFunction<TestSuiteChromosome> ff : testSuite.getFitnessValues().keySet()) {
+                testSuite.setCoverage(ff, 1.0);
+            }
         }
 
         long endTime = System.currentTimeMillis() / 1000;
